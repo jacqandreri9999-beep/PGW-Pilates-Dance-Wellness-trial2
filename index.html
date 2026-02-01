@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGW | Pilates · Dance · Wellness Studio</title>
+    <!-- 使用 Tailwind CSS 進行現代化設計 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts: Montserrat (質感) 與 Playfair Display (優雅) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nude-light: #e4ded5;
+            --nude-medium: #e3ded5;
+            --nude-dark: #C4A484;
+            --text-main: #73695c;
+            --brand-green: #8caf48; /* 指定的綠色 */
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--nude-light);
+            color: var(--text-main);
+            scroll-behavior: smooth;
+        }
+        h1, h2, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .bg-nude-dark { background-color: var(--nude-dark); }
+        .text-nude-dark { color: var(--nude-dark); }
+        .border-nude-dark { border-color: var(--nude-dark); }
+        .text-main { color: var(--text-main); }
+        
+        /* 頁面切換動畫 */
+        .page-content {
+            display: none;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .page-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 導覽列微調 */
+        .nav-link {
+            position: relative;
+            padding-bottom: 2px;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--nude-dark);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* 彈窗動畫 */
+        .modal-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            background-color: #e4ded5 !important; 
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        /* 分類標籤樣式 */
+        .filter-tab {
+            position: relative;
+            color: #a8a29e;
+            transition: color 0.3s ease;
+            white-space: nowrap;
+        }
+        .filter-tab.active {
+            color: var(--nude-dark);
+            font-weight: 600;
+        }
+        .filter-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background-color: var(--nude-dark);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 課程分類標籤 - 獨立命名以避免衝突 */
+        .course-tab {
+            position: relative;
+            color: #a8a29e;
+            transition: color 0.3s ease;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .course-tab.active {
+            color: var(--nude-dark);
+            font-weight: 600;
+        }
+        .course-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 2px;
+            background-color: var(--nude-dark);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 內容容器過渡 */
+        #course-info-container {
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 彈窗 (Special Offer Modal) - 簡化為僅顯示一張照片 -->
+    <div id="special-modal" class="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onclick="closeModal()">
+        <!-- 點擊圖片本身不關閉，點擊外面（overlay）才會關閉 -->
+        <div class="modal-content relative max-w-lg w-full" onclick="event.stopPropagation()">
+            <!-- 關閉按鈕 -->
+            <button onclick="closeModal()" class="absolute -top-12 right-0 text-white hover:text-nude-dark transition">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+
+            <!-- 照片內容 -->
+            <div class="rounded-3xl overflow-hidden shadow-2xl bg-white">
+                <!-- 這裡替換成您的宣傳照 URL -->
+                <img src="bounce.jpg" 
+                     alt="Special Promotion" 
+                     class="w-full h-auto block cursor-pointer"
+                     onclick="closeModal(); showPage('booking');">
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 導覽列 -->
+    <nav class="sticky top-0 z-50 bg-[var(--nude-lighter)]/90 backdrop-blur-md border-b border-stone-100">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col lg:flex-row justify-between items-center">
+            <div class="text-xl font-bold tracking-[0.15em] uppercase mb-4 lg:mb-0 cursor-pointer text-center lg:text-left" onclick="showPage('home')">
+                <!-- 將副標題顏色調整為與主標題一致 (text-main) 並取消斜體 -->
+                PGW<span class="text-main font-light ml-2 border-l border-stone-300 pl-3">Pilates | Dance | Wellness</span>
+            </div>
+            <div class="flex flex-wrap justify-center gap-6 md:gap-10 font-medium text-xs tracking-[0.15em] uppercase">
+                <button onclick="showPage('about')" class="nav-link hover:text-nude-dark transition">About Us</button>
+                <button onclick="showPage('instructor')" class="nav-link hover:text-nude-dark transition">Instructors</button>
+                <button onclick="showPage('classes')" class="nav-link hover:text-stone-900 transition">Classes</button>
+                <button onclick="showPage('pricing')" class="nav-link hover:text-nude-dark transition">Pricing</button>
+                <button onclick="showPage('booking')" class="bg-nude-dark text-white px-6 py-2.5 rounded-full hover:bg-stone-800 transition shadow-sm">Book Now</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容區域 -->
+    <main class="flex-grow">
+        
+        <!-- 首頁區塊 -->
+        <section id="home" class="page-content active">
+            <!-- 英雄影片背景 -->
+            <div class="relative h-[80vh] w-full overflow-hidden bg-stone-200">
+                <div class="w-full h-full overflow-hidden">
+                    <img src="studios/reception1.jpg" 
+                        alt="Studio Reception" 
+                        class="w-full h-full object-cover brightness-75 transition duration-700">
+                </div>
+                <div class="absolute inset-0 bg-black/25 flex items-center justify-center text-center px-4">
+                    <div class="text-white max-w-4xl">
+                        <h1 class="text-5xl md:text-7xl mb-8 leading-tight">At PGW,</h1>
+                        <p class="text-lg md:text-2xl font-light tracking-wide italic opacity-90 mb-10">
+                            we cultivate intentional movement and effortless strength—helping elegant, balanced health become a natural part of everyday life.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 特色亮點 -->
+            <div class="max-w-6xl mx-auto py-24 px-6 text-center">
+                <span class="text-nude-dark uppercase tracking-[0.3em] text-xs font-semibold mb-4 block">The Experience</span>
+                <h2 class="text-4xl mb-16">Elevate Your Everyday</h2>
+                <div class="grid md:grid-cols-3 gap-16">
+                    <div class="space-y-4">
+                        <div class="text-3xl grayscale opacity-60">🧘🏻</div>
+                        <h3 class="font-semibold text-lg uppercase tracking-wider">Mindful Pilates</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed">Expert instructors guiding every movement, cultivating strength, balance, and mindful precision.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-3xl grayscale opacity-60">💃</div>
+                        <h3 class="font-semibold text-lg uppercase tracking-wider">Energetic Dance</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed">Dynamic flows and rhythmic sequences designed to awaken your energy and liberate your spirit.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-3xl grayscale opacity-60">🌿</div>
+                        <h3 class="font-semibold text-lg uppercase tracking-wider">Holistic Wellness</h3>
+                        <p class="text-sm text-stone-500 leading-relaxed">A serene and intentional practice nurturing body, mind, and soul for complete well-being.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 關於教室區塊 -->
+        <section id="about" class="page-content py-24 px-6">
+            <div class="max-w-5xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-16 items-center">
+                    <!-- 文字區塊位於左側 -->
+                    <div class="space-y-8">
+                        <h2 class="text-5xl">pilates, premium</h2>
+                        <p class="leading-relaxed text-stone-500">PGW Pilates GYROTONIC® Dance Studio is a refined space where strength, artistry, and mindful movement come together. Rooted in the precision of classical Pilates and inspired by the expressive flow of dance, PGW offers an elevated experience designed to nurture both body and spirit.</p>
+                        <p class="leading-relaxed text-stone-500">Our instructors guide each session with expertise and care, focusing on alignment, control, and graceful transitions. Every class is thoughtfully crafted to build core strength, enhance flexibility, refine posture, and encourage confident, fluid movement. Whether you’re just beginning your wellness journey or looking to deepen your practice, PGW provides an environment that supports progress at every level.</p>
+                        <p class="leading-relaxed text-stone-500">The studio itself is warm, serene, and meticulously designed—soft lighting, clean lines, and music create an atmosphere that feels both energizing and restorative. Here, clients can slow down, reconnect, and grow stronger through purposeful, elegant movement.</p>
+                        <p class="text-lg leading-relaxed text-stone-600">At PGW Pilates GYROTONIC® Dance Studio, we invite you to move with intention, discover your strength, and experience the harmony of fitness and artistry.</p>
+                    </div>
+
+                    <!-- 圖片區塊位於右側 -->
+                    <div class="relative md:mt-12">
+                        <img src="studios/Pilates1.jpg" alt="Studio Space" class="rounded-2xl shadow-2xl relative z-10 w-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80'">
+                        <div class="absolute -bottom-4 -right-4 w-full h-full border border-nude-dark rounded-2xl z-0"></div>
+                    </div>
+                </div>
+
+                <!-- 更新後的 Studio Policy 區段 (九個欄位) -->
+                <div class="mt-16 pt-10 border-t border-stone-400">
+                    <h2 class="text-5xl mb-5 leading-relaxed">studio policy</h2>
+                    <p class="leading-relaxed text-stone-400 mb-5 text-sm">At PGW, our policies are thoughtfully designed to ensure a positive, safe, and seamless experience for all clients and team members. These guidelines establish clear expectations, support smooth studio operations, and uphold the exceptional quality of our services.</p>
+                    <p class="leading-relaxed text-stone-400 mb-16 text-sm">Our mission is to promote wellness through personalized instruction in a supportive, empowering environment. Thank you for taking the time to review our policies — we look forward to seeing you in the studio!</p>
+
+
+                    <div class="md:columns-2 gap-x-12 gap-y-16 text-[13px] leading-relaxed text-stone-500">
+                
+                        <!-- 1. Cancellation Policy -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">1. Cancellation Policy</h3>
+                            <p>To maintain fairness and accommodate all clients effectively:</p>
+                            <ul class="list-disc ml-4 space-y-2">
+                                <li>Cancellations must be made at least 24 hours before your scheduled session to retain your credit.</li>
+                                <li>Late cancellations (less than 24 hours), no-shows, or arrivals more than 15 minutes late will result in the automatic forfeiture of the associated credit.</li>
+                            </ul>
+                        </div>
+
+                        <!-- 2. Waitlist Policy -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">2. Waitlist Policy</h3>
+                            <ul class="list-disc ml-4 space-y-2">
+                                <li>Each class waitlist is limited to two clients.</li>
+                                <li>If you join the waitlist but no longer plan to attend, it is your responsibility to remove yourself.</li>
+                                <li>When you are moved from the waitlist into a class, you are automatically enrolled, and the 24-hour cancellation policy applies immediately.</li>
+                            </ul>
+                        </div>
+
+                        <!-- 3. Grace Period for Late Arrival-->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">3. Grace Period for Late Arrival</h3>
+                            <ul class="list-disc ml-4 space-y-2">
+                                <li>A 15-minute grace period is allowed for late arrivals.</li>
+                                <li>Clients arriving more than 15 minutes late will not be permitted to join the class for safety reasons, and the credit will be forfeited.</li>
+                            </ul>
+                        </div>
+
+                        <!-- 4. Refund Policy -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">4. Refund Policy</h3>
+                            <p>All purchases made through MindBody or PGW — including single sessions, packages, gift cards, loyalty cards, and retail items — are:</p>
+                            <ul class="list-disc ml-4">
+                                <li>Non-refundable</li>
+                                <li>Non-transferable</li>
+                            </ul>
+                        </div>
+
+                        <!-- 5. Pregnancy Policy -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">5. Pregnancy Policy</h3>
+                            <p>Pregnant clients must inform PGW prior to participating in any classes. </p>
+                            <p>For safety reasons:</p>
+                            <ul class="list-disc ml-4">
+                                <li>Pregnant clients can participate in private sessions only.</li>
+                             </ul>
+                        </div>
+
+                        <!-- 6. Health & Safety -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">6. Health & Safety</h3>
+                            <ul class="list-disc ml-4">
+                                <li>Medical Clearance</li>
+                            </ul>
+                            <p>Clients must be in good physical health and capable of participating in PGW activities. If you have injuries, medical conditions, or concerns, please notify your instructor before class.</p>
+                            
+                            <ul class="list-disc ml-4">
+                                <li>Liability Waiver</li>
+                            </ul>
+                            <p>All clients must sign a waiver of liability prior to attending their first class.</p>
+
+                            <ul class="list-disc ml-4">
+                                <li>Injury or Illness</li>
+                            </ul>
+                            <p>Clients experiencing injury or illness must inform their instructor and refrain from activities that may worsen their condition.</p>
+
+                            <ul class="list-disc ml-4">
+                                <li>Proper Attire</li>
+                            </ul>
+                            <ul class="list-disc ml-7">
+                                <li>Wear comfortable, non-restrictive, breathable workout clothing.</li>
+                                <li>Grip socks are required for all Pilates and GYROTONIC® sessions.</li>
+                                <li>Outdoor shoes are not permitted inside the studio. Please remove them and place them on the shoe rack upon arrival.</li>
+                                <li>For dance classes, indoor dance shoes are required.</li>
+                            </ul>
+                        
+                        </div>
+
+                        <!-- 7. Media & Photography Release -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">7. Media & Photography Release</h3>
+                            <p>By attending classes at PGW, you consent to the use of your likeness in photos or videos taken during sessions for promotional purposes, both online and offline.</p>
+                            <p>If you prefer not to have your image used, you must provide written notice prior to your class.</p>
+
+                        </div>
+
+                        <!-- 8. Governing Law -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">8. Governing Law</h3>
+                            <p>These studio policies are governed by the laws of the State of New York. Any disputes arising from these terms will be resolved in the courts located in New York.</p>
+                            <p>By attending classes or making purchases, you agree to abide by these policies.</p>
+
+                        </div>
+
+                        <!-- 9. Changes to Studio Policy -->
+                        <div class="break-inside-avoid mb-16">
+                            <h3 class="text-stone-800 font-medium uppercase tracking-widest text-sm border-b border-stone-300 pb-2">9. Changes to Studio Policy</h3>
+                            <p>PGW reserves the right to update or modify these policies at any time. Clients will be notified of any changes, and revised terms will apply to all future transactions and participation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 講師區塊 (Instructors) -->
+        <section id="instructor" class="page-content py-20 px-4 md:px-6 bg-[var(--nude-light)]">
+            <div class="max-w-6xl ml-auto mr-12 lg:mr-24">
+                <div class="text-center mb-16">
+                    <h2 class="text-5xl mb-4">Where the Collective Meets</h2>
+                    <p class="text-stone-400 italic">World-class talent, dedicated to your journey.</p>
+                </div>
+                
+                <!-- 講師個人標籤導航 -->
+                <div class="flex flex-wrap justify-center gap-6 md:gap-10 mb-16 border-b border-stone-200 pb-4 overflow-x-auto no-scrollbar">
+                    <button onclick="scrollToInstructor('kelly', this)" class="filter-tab active text-[10px] uppercase tracking-[0.2em]">Kelly Li</button>
+                    <button onclick="scrollToInstructor('winnie', this)" class="filter-tab text-[10px] uppercase tracking-[0.2em]">Winnie Tseng</button>
+                    <button onclick="scrollToInstructor('patricia', this)" class="filter-tab text-[10px] uppercase tracking-[0.2em]">Patricia Stewart</button>
+                    <button onclick="scrollToInstructor('zoe', this)" class="filter-tab text-[10px] uppercase tracking-[0.2em]">Zoe Pan</button>
+                    <button onclick="scrollToInstructor('jennifer', this)" class="filter-tab text-[10px] uppercase tracking-[0.2em]">Jennifer Zhu</button>
+                </div>
+
+                <!-- 1. Kelly (Yaoyao) Li -->
+                <div id="instructor-kelly" class="grid lg:grid-cols-12 gap-16 items-center mb-12">
+                    <div class="lg:col-span-4">
+                        <div class="aspect-[4/5] bg-stone-100 rounded-3xl mb-6 overflow-hidden">
+                            <img src="instructors/hero8.jpg" alt="Kelly (Yaoyao) Li" class="w-full h-full object-cover group-hover:scale-105 transition duration-1000">
+                        </div>
+                        <div class="text-center lg:text-left">
+                            <h3 class="text-4xl mb-3 tracking-tight uppercase">Kelly (Yaoyao) Li</h3>
+                            <p class="text-nude-dark uppercase tracking-[0.2em] text-[13px] font-bold italic">National Master-Level Athlete | Pilates & Gyrotonic® Instructor</p>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-7 space-y-6 text-stone-500 leading-relaxed text-sm md:text-base lg:pt-4">
+                        <p>Kelly began training in rhythmic gymnastics at the age of six and became a professional rhythmic gymnast at eleven. She represented China multiple times at the Asian Championships, the Four Continents Championships, and other international rhythmic gymnastics competitions. Her top career achievements include 5th place at the World Championships and Silver Medalist at the Four Continents Rhythmic Gymnastics Championships. She is a National Master-Level Athlete of China and a Chinese Rhythmic Gymnastics Champion.</p>
+                        <p>After retiring from professional competition, Kelly became a professional rhythmic gymnastics coach, where she trained numerous outstanding athletes who went on to win championships at both national and international competitions.</p>
+                        <p>She later became a Pilates and GYROTONIC® instructor, holding a Polestar Pilates Comprehensive Certification and GYROTONIC® Level 1 Certification. With extensive hands-on teaching experience, she specializes in developing scientifically tailored training programs, effectively supporting the enhancement of professional performance, addressing postural issues, and assisting with body conditioning and management.</p>
+                    </div>
+                </div>
+
+                <!-- 2. Winnie Tseng -->
+                <div id="instructor-winnie" class="grid lg:grid-cols-12 gap-16 items-center mb-12">
+                    <div class="lg:col-span-7 space-y-6 text-stone-500 leading-relaxed text-sm md:text-base lg:pt-4 order-2 lg:order-1">
+                        <p>Winnie is a Pilates instructor trained at Sal Anthony Movement Salon, with over 15 years of dedicated Pilates practice and more than 8 years of professional teaching experience.</p>
+                        <p>Her teaching is rooted in precision, mindful movement, and deep body awareness. Winnie is passionate about helping clients build a strong, balanced body while cultivating sustainable energy and long-term physical health.</p>
+                        <p>She works with a wide range of clients—from complete beginners to experienced movers—adapting each session to meet individual needs while maintaining a challenging, intelligent, and effective practice. Winnie believes Pilates is not just a workout, but a powerful tool for transforming how you move, feel, and live.</p>
+                        <p>Whether you are seeking to refine your practice or begin your Pilates journey with confidence, Winnie is committed to guiding you every step of the way.</p>
+                    </div>
+                    <div class="lg:col-span-4 order-1 lg:order-2">
+                        <div class="aspect-[4/5] bg-stone-100 rounded-3xl mb-6 overflow-hidden">
+                            <img src="instructors/hero9.jpg" alt="Winnie Tseng" class="w-full h-full object-cover group-hover:scale-105 transition duration-1000">
+                        </div>
+                        <div class="text-center lg:text-left">
+                            <h3 class="text-4xl mb-3 tracking-tight uppercase">Winnie Tseng</h3>
+                            <p class="text-nude-dark uppercase tracking-[0.2em] text-[13px] font-bold italic">Pilates Instructor</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Patricia Stewart -->
+                <div id="instructor-patricia"class="grid lg:grid-cols-12 gap-16 items-center mb-12">
+                    <div class="lg:col-span-4">
+                        <div class="aspect-[4/5] bg-stone-100 rounded-3xl mb-6 overflow-hidden">
+                            <img src="instructors/hero10.jpg" alt="Patricia Stewart" class="w-full h-full object-cover group-hover:scale-105 transition duration-1000">
+                        </div>
+                        <div class="text-center lg:text-left">
+                            <h3 class="text-4xl mb-3 tracking-tight uppercase">Patricia Stewart</h3>
+                            <p class="text-nude-dark uppercase tracking-[0.2em] text-[13px] font-bold italic">GYROTONIC® & GYROKINESIS® Master Trainer</p>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-7 space-y-6 text-stone-500 leading-relaxed text-sm md:text-base lg:pt-4">
+                        <p>Patricia Stewart has been teaching GYROTONIC® exercise for over 17 years and is a highly experienced GYROTONIC® and GYROKINESIS® Master Trainer. She is certified in all specialized GYROTONIC® equipment, including the Jumping Stretching Board, GYROTONER®, Archway, and Leg Extension Unit, and serves as a GYROTONIC® Master Trainer for both Level 1 and Level 2, as well as a GYROKINESIS® and GYROTONER® Master Trainer.</p>
+                        <p>Before becoming a trainer, Patricia was a dedicated student of the work for more than five years, discovering GYROTONIC® while working as a Pilates instructor. She has completed GYROTONIC® and GYROKINESIS® Level 2 studies, all three Therapeutic Application Courses, and numerous specialized trainings, including Applications for Dancers and Applications for Golf.</p>
+                        <p>Originally from Long Island, Patricia is thrilled to be bringing and expanding GYROTONIC® in the community where she grew up. She loves guiding people of all ages and fitness levels toward greater harmony, flow, and joy in movement, helping them feel more at home in their bodies.</p>
+                        <p>Patricia has worked with a wide range of clients, including professional dancers, high-level athletes, physical therapists, martial artists, yoga and Pilates teachers, seniors, and children. Her experience also includes working with individuals recovering from injury or managing chronic conditions, such as joint replacements, spinal cord injuries, TBI, fibromyalgia, Parkinson’s disease, scoliosis, arthritis, and Lyme disease. At the heart of her work is supporting people who value a healthy, inspired approach to fitness and the vitality that GYROTONIC® and GYROKINESIS® can bring to everyday life.</p>
+                    </div>
+                </div>
+
+                <!-- 4. Zoe Pan -->
+                <div id="instructor-zoe" class="grid lg:grid-cols-12 gap-16 items-center mb-12">
+                    <div class="lg:col-span-7 space-y-6 text-stone-500 leading-relaxed text-sm md:text-base lg:pt-4 order-2 lg:order-1">
+                        <p>Zoe began dancing at the age of six and quickly developed a deep passion for the art form. She trained with AIM Company at Broadway Dance Center in New York City and went on to attend Dean College, where she earned a Bachelor of Arts degree in Dance.</p>
+                        <p>During her college years, Zoe began teaching and training competitive and recreational dancers at local studios, successfully coaching students to strong placements at regional competitions. Having recently returned to New York, she is excited to bring her training, experience, and dedication to the PGW team.</p>
+                    </div>
+                    <div class="lg:col-span-4 order-1 lg:order-2">
+                        <div class="aspect-[4/5] bg-stone-100 rounded-3xl mb-6 overflow-hidden">
+                            <img src="instructors/hero11.jpg" alt="Zoe Pan" class="w-full h-full object-cover group-hover:scale-105 transition duration-1000">
+                        </div>
+                        <div class="text-center lg:text-left">
+                            <h3 class="text-4xl mb-3 tracking-tight uppercase">Zoe Pan</h3>
+                            <p class="text-nude-dark uppercase tracking-[0.2em] text-[13px] font-bold italic">Dance Specialist | PGW Team</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Jennifer Zhu -->
+                <div id="instructor-jennifer" class="grid lg:grid-cols-12 gap-16 items-center mb-6">
+                    <div class="lg:col-span-4">
+                        <div class="aspect-[4/5] bg-stone-100 rounded-3xl mb-6 overflow-hidden">
+                            <img src="instructors/hero12.jpg" alt="Jennifer Zhu" class="w-full h-full object-cover group-hover:scale-105 transition duration-1000">
+                        </div>
+                        <div class="text-center lg:text-left">
+                            <h3 class="text-4xl mb-3 tracking-tight uppercase">Jennifer Zhu</h3>
+                            <p class="text-nude-dark uppercase tracking-[0.2em] text-[13px] font-bold italic">Professional Dance Instructor | Champion Latin Dancer</p>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-7 space-y-6 text-stone-500 leading-relaxed text-sm md:text-base lg:pt-4">
+                        <p>Jennifer is a professional dance instructor with extensive training and performance experience both in China and internationally. She is a certified professional teacher with the UK Royal Academy of Dance (IDTA) and has won multiple championships, including the Southeast Asia Professional Latin Dance Champion and China International Standard Latin Dance Champion. She is also a Gold Award recipient of China’s prestigious “Lotus Dance Award.”</p>
+                        <p>Jennifer received formal training in folk dance at Guangxi Minzu Art School and later earned a bachelor’s degree from the Beijing International Standard Dance Academy. She has worked with the Beijing Song and Dance Troupe as a National First-Class Performer and was specially invited to serve as a guest professor at the Beijing Dance Academy.</p>
+                        <p>She specializes in teaching Latin dance, jazz, modern dance, classical dance, and folk dance. With a strong foundation in technique and performance, Jennifer is passionate about helping students build confidence, artistry, and a deep understanding of dance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Classes Section -->
+        <section id="classes" class="page-content py-20 px-4 md:px-6 bg-[var(--nude-light)]">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-5xl mb-4">Where Growth Begins</h2>
+                    <p class="text-stone-400 italic">Explore a range of programs designed for every need.</p>
+                </div>
+
+                <!-- 課程切換標籤 (命名為 course-tab) -->
+                <div class="flex flex-wrap justify-center gap-6 md:gap-10 mb-20 border-b border-stone-200 pb-4 overflow-x-auto">
+                    <button onclick="selectCourseDetail('pilates')" id="ctab-pilates" class="course-tab active text-[10px] uppercase tracking-[0.2em]">Pilates</button>
+                    <button onclick="selectCourseDetail('gyrotonic')" id="ctab-gyrotonic" class="course-tab text-[10px] uppercase tracking-[0.2em]">Gyrotonic®</button>
+                    <button onclick="selectCourseDetail('gyrokinesis')" id="ctab-gyrokinesis" class="course-tab text-[10px] uppercase tracking-[0.2em]">Gyrokinesis®</button>
+                    <button onclick="selectCourseDetail('cardio')" id="ctab-cardio" class="course-tab text-[10px] uppercase tracking-[0.2em]">Cardio Dance</button>
+                    <button onclick="selectCourseDetail('barre')" id="ctab-barre" class="course-tab text-[10px] uppercase tracking-[0.2em]">Barre</button>
+                    <button onclick="selectCourseDetail('pop')" id="ctab-pop" class="course-tab text-[10px] uppercase tracking-[0.2em]">Viral Pop</button>
+                    <button onclick="selectCourseDetail('jazz')" id="ctab-jazz" class="course-tab text-[10px] uppercase tracking-[0.2em]">Jazz Fusion</button>
+                    <button onclick="selectCourseDetail('kids')" id="ctab-kids" class="course-tab text-[10px] uppercase tracking-[0.2em]">Kids Jazz</button>
+                </div>
+
+                <!-- 課程介紹專用容器 (初始畫面：Pilates) -->
+                <div id="course-info-container" class="opacity-100 transition-opacity duration-300">
+                    <!-- 由 JavaScript 生成內容 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 課程分頁 -->
+        <section id="pricing" class="page-content py-20 px-4 md:px-6 bg-[var(--nude-light)]">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-5xl mb-4">Where Health Glows Up</h2>
+                    <p class="text-stone-400 italic">Body’s health and beauty are always worth investing in.</p>
+
+                </div>
+                
+                <!-- 主分類標籤 -->
+                <div class="flex flex-wrap justify-center gap-6 md:gap-12 mb-16 border-b border-stone-200 pb-4 overflow-x-auto">
+                    <button onclick="filterClasses('promo')" id="tab-promo" class="filter-tab active text-[10px] uppercase tracking-[0.2em]">Promotion</button>
+                    <button onclick="filterClasses('group')" id="tab-group" class="filter-tab text-[10px] uppercase tracking-[0.2em]">Group Class</button>
+                    <button onclick="filterClasses('p-pilates')" id="tab-p-pilates" class="filter-tab text-[10px] uppercase tracking-[0.2em]">Private Pilates</button>
+                    <button onclick="filterClasses('p-gyro')" id="tab-p-gyro" class="filter-tab text-[10px] uppercase tracking-[0.2em]">Private Gyrotonic®</button>
+                </div>
+
+                <!-- 課程動態區域 -->
+                <div id="classes-container" class="transition-opacity duration-300">
+                    <!-- 由 JavaScript 生成內容 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 預約區塊 -->
+        <section id="booking" class="page-content py-32 px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-6xl mb-8">Ready to Elevate?</h2>
+                <p class="text-xl text-stone-500 mb-12 max-w-2xl mx-auto">Join our community and book your first session.<br> We use Mindbody for a seamless scheduling experience.</p>
+                
+                <!-- Mindbody 連結 -->
+                <a href="https://www.mindbodyonline.com/explore" target="_blank" class="inline-block bg-nude-dark text-white text-lg px-16 py-5 rounded-full shadow-2xl hover:bg-stone-800 transition-all duration-300 transform hover:-translate-y-1">
+                    Book on Mindbody
+                </a>
+                
+                <div class="mt-20 flex flex-col md:flex-row justify-center gap-12 text-sm uppercase tracking-widest text-stone-400">
+                    <div>📍 123 Wellness Ave, New York</div>
+                    <div>📞 (555) 012-3456</div>
+                    <div>✉️ hello@pgwstudios.com</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="bg-[var(--nude-lighter)] py-16 px-6 border-t border-stone-100">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-stone-400 text-[10px] tracking-[0.2em] uppercase text-center lg:text-left">
+            <div class="mb-6 md:mb-0">© 2024 PGW PILATES | DANCE | WELLNESS. MADE FOR MOVERS.</div>
+            <div class="flex gap-10">
+                <a href="https://www.instagram.com/pgwstudiony" class="hover:text-nude-dark transition">Instagram</a>
+                <a href="https://maps.app.goo.gl/KWcKNUaUrdiusaa1A" class="hover:text-nude-dark transition">Google Map</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 初始載入
+        window.onload = () => {
+            filterClasses('intro');
+            // 進入網站後自動彈出優惠
+            setTimeout(openModal, 1000); 
+        };
+
+        // 彈窗控制邏輯
+        function openModal() {
+            document.getElementById('special-modal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 防止滾動
+        }
+
+        function closeModal() {
+            document.getElementById('special-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // 點擊背景關閉
+        document.getElementById('special-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        /**
+         * 捲動到特定講師區塊
+         * @param {string} instructorId - 講師的簡短 ID (如 kelly, winnie)
+         * @param {HTMLElement} btn - 被點擊的按鈕
+         */
+        function scrollToInstructor(instructorId, btn) {
+            // 1. 切換標籤的 Active 樣式
+            const tabs = document.querySelectorAll('.filter-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 2. 獲取目標元素並捲動
+            const element = document.getElementById('instructor-' + instructorId);
+            if (element) {
+                const offset = 120; // 考慮到 Sticky Nav 的高度
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+            }
+        }
+
+        // 課程資料庫
+        const detailedClassData = {
+            pilates: {
+                title: "Comprehensive Pilates Program Overview",
+                image: "classes/pilates1.jpg",
+                desc: `
+                    <p>The comprehensive Pilates program is a systematic and complete mind–body training system, encompassing Mat Pilates as well as Equipment-Based Pilates (Reformer, Cadillac, Chair, Barrels, etc.). The program focuses on core control and whole-body coordination, progressively enhancing strength, stability, and flexibility.</p>
+                    <p>The courses emphasize precise movement, breath coordination, and body awareness, deeply activating core muscles, improving posture and alignment, and increasing joint stability and movement efficiency. By combining different equipment and levels of practice, the program accommodates gentle rehabilitative sessions as well as high-intensity, functional, and performance-oriented training.</p>
+                    <p>This comprehensive Pilates program is suitable for beginners, intermediate practitioners, dancers, athletes, and those seeking rehabilitation. It helps build a strong and balanced physical foundation, allowing the body to gain strength through stability while maintaining elegance and control in movement.</p>
+                `,
+            },
+            gyrotonic: {
+                title: "GYROTONIC® Program Overview",
+                image: "classes/GYROTONIC1.jpg",
+                desc: `
+                    <p>GYROTONIC® is a movement-based training system centered on spirals, circular pathways, and continuous, flowing motion. Drawing inspiration from dance, yoga, tai chi, and rehabilitation principles, the method combines rhythmic breathing with multi-dimensional movement to gently yet deeply activate the entire body. It enhances spinal mobility, joint range of motion, and overall coordination.</p>
+                    <p>GYROTONIC® emphasizes whole-body connectivity and the natural flow of energy, building strength while maintaining flexibility and length. The practice helps improve posture, release tension, and prevent injury. It is suitable for dancers, athletes, and anyone seeking functional training and mindful physical restoration, allowing the body to gain strength through fluidity and return to balance through movement.</p>
+                `,
+            },
+            gyrokinesis: {
+                title: "Gyrokinesis® Program Overview",
+                image: "studios/GYROKINESIS2.jpg",
+                desc: `
+                    <p>GYROKINESIS® is a floor- and chair-based movement method derived from the GYROTONIC® system. Practiced without equipment, it uses spiraling, circular, and wave-like movements combined with rhythmic breathing to guide the body through natural, multi-dimensional motion. Centered on the spine, the practice systematically awakens the joints and muscles of the entire body, enhancing flexibility, coordination, and control.</p>
+                    <p>GYROKINESIS® focuses on lengthening and release while building strength, helping to improve posture, relieve tension and stress, and increase body awareness. It is suitable for dancers, athletes, and anyone seeking a gentle yet effective full-body workout, offering a harmonious balance of functional training and mind–body integration.</p>
+                `,
+            },
+            cardio: {
+                title: "Cardio Dance",
+                image: "studios/Dancefloor2.jpg",
+                desc: `
+                    <p>Move, sweat, and smile! Dance to today’s hottest music while building cardio strength with simple, high-energy routines.</p>
+                `,
+            },
+            barre: {
+                title: "Barre",
+                image: "studios/Dancefloor2.jpg",
+                desc: `
+                    <p>This class incorporates a series of authentic barre exercises rooted in dance technique. Build, sculpt, and tone lean muscles while increasing flexibility and strength.</p>
+                `,
+            },
+            pop: {
+                title: "Viral Pop Dance",
+                image: "studios/Dancefloor2.jpg",
+                desc: `
+                    <p>Viral Pop Dance is a fun, high-energy class where you’ll learn popular dance routines inspired by trending TikTok and Douyin videos. Each class breaks down the moves step-by-step so dancers of all levels can feel confident, have fun, and leave with a routine you can show off.</p>
+                `,
+            },
+            jazz: {
+                title: "Jazz Fusion Course Introduction",
+                image: "studios/Dancefloor2.jpg",
+                desc: `
+                    <p>Jazz Fusion is a comprehensive jazz dance course that integrates a variety of styles, including Chinese Jazz (Chinese classical–inspired jazz performance pieces), Latin Jazz (Latin jazz performance pieces), and Vintage Jazz (retro-style jazz). The course also incorporates Latin dance technique training (Latin basic skills), showcasing the fusion and dynamic interaction of Eastern and Western aesthetics through music and movement. The course is built upon the characteristic elements and foundational styles of Chinese classical dance and traditional folk dance, which are creatively blended with jazz and Latin dance. Through the choreography of performance pieces with diverse stylistic features, the training strengthens body control, stage presence, and core stability, while helping students enhance their sense of rhythm, coordination, and overall stage performance ability. This course is ideal for dancers who wish to expand their stylistic range beyond jazz fundamentals and develop strong performance-piece expression. By balancing strength and elegance, students are guided to discover and cultivate their own distinctive Jazz Fusion style.</p>
+                `,
+            },
+            kids: {
+                title: "Jazz Fusion For Kids",
+                image: "studios/Dancefloor2.jpg",
+                desc: `
+                    <p>Our Jazz Fusion for Kids class blends energetic jazz technique with contemporary movement, musical theater, and even hip-hop elements, using popular music to teach rhythm, coordination, flexibility, and performance skills in a fun, creative, and supportive environment, building confidence while developing versatile dancers ready for various styles.</p>
+                    
+                    <h3><strong>What Kids Learn:</strong></h3>
+                    <ul>
+                        <li>• Core Jazz Skills: Isolations (popping/locking), leaps, turns, and extensions, rooted in ballet technique but with a low center of gravity and high energy.</li>
+                        <li>• Contemporary Movement: Fluidity, seamless transitions, and artistic expression.</li>
+                        <li>• Rhythm & Musicality: Moving to current, age-appropriate music, often using games to improve timing.</li>
+                        <li>• Versatility: Blending different dance vocabularies (jazz, hip-hop, musical theater) to create dynamic routines.</li>
+                        <li>• Performance & Confidence: Learning choreography, developing stage presence, and building self-esteem in a positive space.</li>
+                    </ul>
+
+                    <h3><strong>Class Structure & Vibe:</strong></h3>
+                    <ul>
+                        <li>• Warm-ups: Stretching and conditioning to build strength, balance, and flexibility.</li>
+                        <li>• Technique Drills: Center work and across-the-floor exercises.</li>
+                        <li>• Choreography: Learning fun, upbeat routines for performances.</li>
+                        <li>• Supportive Environment: Focus on joy, creativity, discipline, and teamwork.</li>
+                    </ul>
+
+                    <h3><strong>Who's it for?</strong></h3>
+                    <ul>
+                        <li>• Energetic kids who love music and popular dance.</li>
+                        <li>• Dancers looking to build technical skills and creative expression.</li>
+                        <li>• Beginners to intermediate dancers seeking a fun, foundational, or versatile training.</li>
+                    </ul>
+    
+                `,
+            }
+        };
+        
+        /**
+         * 獨立的課程詳情切換函式
+         * 使用 selectCourseDetail 避免與 filterClasses 衝突
+         */
+        function selectCourseDetail(category) {
+            // 1. 切換標籤 Active 狀態 (使用專屬的 .course-tab class)
+            document.querySelectorAll('.course-tab').forEach(t => t.classList.remove('active'));
+            const activeTab = document.getElementById(`ctab-${category}`);
+            if(activeTab) activeTab.classList.add('active');
+
+            // 2. 獲取專屬容器
+            const container = document.getElementById('course-info-container');
+            if(!container) return;
+            
+            // 3. 執行淡出
+            container.style.opacity = '0';
+
+            // 4. 更換內容
+            setTimeout(() => {
+                const item = detailedClassData[category];
+                if(!item) return;
+
+                container.innerHTML = `
+                    <div class="space-y-12">
+                        <div class="grid md:grid-cols-12 gap-12 items-start">
+                            <div class="md:col-span-5">
+                                <img src="${item.image}" alt="${item.title}" class="rounded-2xl shadow-xl w-full object-cover aspect-[4/5]">
+                                <!-- 課堂示意圖標記 -->
+                                <p class="mt-3 text-stone-400 text-[9px] italic tracking-wider text-center">
+                                    * Class images are for reference only. Experience the real session with us!
+                                </p>
+                            </div>
+                            <div class="md:col-span-7 space-y-6">
+                                <span class="text-nude-dark uppercase tracking-[0.3em] text-[10px] font-bold">Course Details</span>
+                                <h3 class="text-4xl font-serif italic text-stone-800 uppercase tracking-tight">${item.title}</h3>
+                                <p class="text-stone-500 leading-relaxed text-lg">${item.desc}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 5. 執行淡入
+                container.style.opacity = '1';
+            }, 300);
+        }
+
+        // Pricing 資料結構
+        const classLibrary = {
+            promo: [
+                {
+                    name: "PROMOTIONAL OFFERS",
+                    duration: "Valid for 2 weeks",
+                    footnote: "Each person may use this once only. Non-transferable.",
+                    plans: [
+                        { 
+                            label: "INTRO PACKAGE", 
+                            price: "$150", 
+                            validity: "1 private intro session 45mins (Pilates or GYROTONIC®) + 1 reformer group class. + 1 group class from Barre, Dance, or Mat Pilates." 
+                        },
+                        { 
+                            label: "GYROTONIC® Private Intro", 
+                            tag: "45 mins",
+                            price: "$99", 
+                            validity: "" // 已移除備註
+                        },
+                        { 
+                            label: "PILATES Private Intro", 
+                            tag: "45 mins",
+                            price: "$99", 
+                            validity: "" // 已移除備註
+                        }
+                    ]
+                }
+            ],
+            group: [
+                {
+                    name: "PILATES REFORMER",
+                    duration: "50 mins",
+                    plans: [
+                        { label: "Single class", price: "$45", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$400", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$1150", validity: "valid for 9 months" }
+                    ]
+                },
+                {
+                    name: "GYROKINESIS®",
+                    duration: "60 mins",
+                    instructor: "Instructor: Master Trainer",
+                    plans: [
+                        { label: "Single class", price: "$49", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$450", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$1250", validity: "valid for 9 months" }
+                    ]
+                },
+                {
+                    name: "MAT PILATES",
+                    duration: "60 mins",
+                    plans: [
+                        { label: "Single class", price: "$35", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$320", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$900", validity: "valid for 9 months" }
+                    ]
+                },
+                {
+                    name: "BARRE, CARDIO DANCE, VIRAL POP DANCE & JAZZ FUSION",
+                    duration: "60 mins",
+                    plans: [
+                        { label: "Single class", price: "$35", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$320", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$900", validity: "valid for 9 months" }
+                    ]
+                }
+            ],
+            'p-pilates': [
+                {
+                    name: "PILATES PRIVATE",
+                    duration: "55 mins",
+                    plans: [
+                        { label: "Single class", price: "$150", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$1350", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$3825", validity: "valid for 9 months" }
+                    ]
+                },
+                {
+                    name: "PILATES DUET",
+                    duration: "55 mins",
+                    plans: [
+                        { label: "Single class", price: "$180", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$1620", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$4590", validity: "valid for 9 months" }
+                    ]
+                }
+            ],
+            'p-gyro': [
+                {
+                    name: "SENIOR TRAINER",
+                    duration: "55 mins",
+                    plans: [
+                        { label: "Single class", price: "$150", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$1350", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$3825", validity: "valid for 9 months" }
+                    ]
+                },
+                {
+                    name: "MASTER TRAINER",
+                    duration: "55 mins",
+                    plans: [
+                        { label: "Single class", price: "$180", validity: "valid for 1 month" },
+                        { label: "10 classes", price: "$1620", validity: "valid for 3 months" },
+                        { label: "30 classes", price: "$4590", validity: "valid for 9 months" }
+                    ]
+                }
+            ]
+        };
+
+        function filterClasses(category) {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            const activeTab = document.getElementById(`tab-${category}`);
+            if(activeTab) activeTab.classList.add('active');
+
+            const container = document.getElementById('classes-container');
+            container.style.opacity = '0';
+
+            setTimeout(() => {
+                const data = classLibrary[category];
+                const gridCols = category === 'promo' ? 'flex justify-center' : 'grid md:grid-cols-2 gap-8 lg:gap-12';
+                let html = `<div class="${gridCols}">`;
+                
+                data.forEach(cat => {
+                    html += `
+                        <div class="bg-white p-8 md:p-10 rounded-[2.5rem] border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col h-full ${category === 'promo' ? 'max-w-3xl w-full' : ''}">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-[13px] md:text-sm font-bold tracking-[0.1em] text-stone-800 uppercase leading-tight w-2/3">${cat.name}</h3>
+                                <span class="text-[9px] bg-stone-100 text-stone-400 px-3 py-1 rounded-full uppercase font-bold whitespace-nowrap">${cat.duration}</span>
+                            </div>
+                            ${cat.instructor ? `<p class="text-[10px] text-nude-dark italic font-semibold mb-6 uppercase tracking-widest">${cat.instructor}</p>` : ''}
+                            
+                            <div class="mt-8 space-y-2 border-t border-stone-50 pt-8 flex-grow">
+                                ${cat.plans.map((p, i) => `
+                                    <div class="flex justify-between items-center py-3">
+                                        <div class="flex flex-col pr-6">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-bold text-stone-700 tracking-tight">${p.label}</span>
+                                                ${p.tag ? `<span class="text-[8px] border border-stone-200 text-stone-400 px-2 py-0.5 rounded-full uppercase font-medium">${p.tag}</span>` : ''}
+                                            </div>
+                                            ${p.validity ? `<span class="text-[10px] text-stone-400 leading-relaxed mt-1">${p.validity}</span>` : ''}
+                                        </div>
+                                        <div class="flex items-center gap-4 shrink-0">
+                                            <span class="text-xl font-serif text-stone-800">${p.price}</span>
+                                            <button onclick="showPage('booking')" class="w-7 h-7 rounded-full border border-stone-200 text-[10px] text-stone-300 hover:bg-nude-dark hover:text-white transition-all">→</button>
+                                        </div>
+                                    </div>
+                                    ${i < cat.plans.length - 1 ? '<div class="pricing-divider"></div>' : ''}
+                                `).join('')}
+                            </div>
+                            ${cat.footnote ? `<div class="mt-8 pt-4 border-t border-stone-50 text-[10px] text-nude-dark italic tracking-wider font-medium">${cat.footnote}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                container.innerHTML = html;
+                container.style.opacity = '1';
+            }, 300);
+        }
+
+        /**
+         * 頁面導航邏輯
+         */
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => page.classList.remove('active'));
+
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // 整合邏輯：根據進入的頁面 ID 決定預設顯示哪一個子內容
+                if (pageId === 'classes') {
+                    selectCourseDetail('pilates'); // 進入課程頁預設看皮拉提斯
+                } else if (pageId === 'pricing') {
+                    filterClasses('promo');      // 進入價格頁預設看優惠
+                }
+            }
+        }
+    </script>
+</body>
+</html>
